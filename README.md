@@ -136,8 +136,6 @@ Selain backend, disediakan pula **Frontend** sederhana (`Resources/FE/index.html
 <img width="1387" height="830" alt="Image" src="https://github.com/user-attachments/assets/95f5462d-cd93-4cac-8bca-532ce6683391" />
 ### 2.2 Spesifikasi dan Estimasi Biaya VM
 
-> _(Belum diisi — buat tabel: Nama VM | Tipe/Spesifikasi (vCPU, RAM) | Fungsi | Harga/bulan, lalu totalkan biaya keseluruhan dan bandingkan dengan budget Rp1.300.000/bulan.)_
-
 | VM | Spesifikasi | Fungsi | Harga/bulan |
 |----|-------------|--------|-------------|
 | VM-LB-BE|4vCPU, 8GB RAM (Premium Intel)|Load Balancer + Flask Backend | $48 |
