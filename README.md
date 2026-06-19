@@ -29,7 +29,7 @@
 
 ### 1.1 Latar Belakang
 
-Perusahaan rintisan (startup) di bidang e-commerce sedang mengembangkan platform jual-beli online dan membutuhkan backend **Order Processing Service** — layanan inti yang menangani pembuatan pesanan, pengecekan status, dan riwayat transaksi. Sebagai Cloud Engineer, tim diminta untuk mendeploy, mengonfigurasi, dan mengoptimalkan layanan tersebut di atas infrastruktur cloud agar mampu menangani lonjakan traffic (flash sale, promo, dsb.) secara andal dan efisien.
+Perusahaan rintisan (startup) di bidang e-commerce sedang mengembangkan platform jual-beli online dan membutuhkan backend **Order Processing Service** layanan inti yang menangani pembuatan pesanan, pengecekan status, dan riwayat transaksi. Sebagai Cloud Engineer, tim diminta untuk mendeploy, mengonfigurasi, dan mengoptimalkan layanan tersebut di atas infrastruktur cloud agar mampu menangani lonjakan traffic (flash sale, promo, dsb.) secara andal dan efisien.
 
 ### 1.2 Permasalahan
 
