@@ -4,6 +4,7 @@
 |Nama|NRP|
 |----|---|
 |Ahmad Idza Anafin|5027241017|
+|Nadia Fauziazahra K.|5027241094|
 |Muhammad Ziddan Habibi|5027241122|
 
 
