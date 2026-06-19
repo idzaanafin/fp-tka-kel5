@@ -73,7 +73,7 @@
 
   <script>
     // Ganti dengan IP/URL backend yang sudah di-deploy
-    const API_BASE = "http://localhost:5001";
+    const API_BASE = "https://fp-tka.chozy.id";
 
     function showResult(elementId, data, isError = false) {
       const el = document.getElementById(elementId);
@@ -93,7 +93,7 @@
       }
 
       try {
-        const res = await fetch(`${API_BASE}/order`, {
+        const res = await fetch(`${API_BASE}/orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ product, quantity, price })
@@ -112,7 +112,7 @@
         return;
       }
       try {
-        const res = await fetch(`${API_BASE}/order/${orderId}`);
+        const res = await fetch(`${API_BASE}/orders/${orderId}`);
         const data = await res.json();
         showResult("status-result", data, !res.ok);
       } catch (err) {
@@ -128,7 +128,7 @@
         return;
       }
       try {
-        const res = await fetch(`${API_BASE}/order/${orderId}`, {
+        const res = await fetch(`${API_BASE}/orders/${orderId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status })
