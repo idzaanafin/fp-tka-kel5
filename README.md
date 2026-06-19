@@ -6,6 +6,9 @@
 |Ahmad Idza Anafin|5027241017|
 |Nadia Fauziazahra K.|5027241094|
 |Muhammad Ziddan Habibi|5027241122|
+|Mey Rosalina|5027241004|
+|Erlinda Annisa|5027241108|
+|Ahmad Wildan Fawwaz|5027241001|
 
 
 ## Permasalahan 
