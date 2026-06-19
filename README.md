@@ -133,8 +133,7 @@ Selain backend, disediakan pula **Frontend** sederhana (`Resources/FE/index.html
 
 ### 2.1 Diagram Arsitektur
 
-> _(Belum diisi — sisipkan diagram dari draw.io yang menunjukkan: VM/instance backend, load balancer (jika ada), database server MongoDB, frontend server/CDN, dan komponen tambahan lain.)_
-
+(https://github.com/idzaanafin/fp-tka-kel5/issues/1)
 ### 2.2 Spesifikasi dan Estimasi Biaya VM
 
 > _(Belum diisi — buat tabel: Nama VM | Tipe/Spesifikasi (vCPU, RAM) | Fungsi | Harga/bulan, lalu totalkan biaya keseluruhan dan bandingkan dengan budget Rp1.300.000/bulan.)_
