@@ -140,14 +140,17 @@ Selain backend, disediakan pula **Frontend** sederhana (`Resources/FE/index.html
 
 | VM | Spesifikasi | Fungsi | Harga/bulan |
 |----|-------------|--------|-------------|
-| | | | |
-| **Total** | | | |
+| VM-LB-BE|4vCPU, 8GB RAM (Premium Intel)|Load Balancer + Flask Backend | $48 |
+| VM-DB|2vCPU, 2GB RAM (Basic/General)|MongoDB Database | $18 |
+| **Total** | | | $66|
 
 ### 2.3 Justifikasi Pemilihan Arsitektur
+Pemilihan arsitektur dengan skema 1 VM besar ($vCPU, 8 RAM) digunakan sebagai Load Balancer serta Backend dan 1 VM sebagai Database didasarkan pada kebutuham untuk meminimalkan latensi selama periode traffic tingg, seperti flash sale. Berikut justifikasinya:
 
-> _(Belum diisi — jelaskan alasan pemilihan konfigurasi ini ditinjau dari sisi performa dan efisiensi biaya, misalnya alasan memisahkan database dari app server, jumlah instance backend, strategi load balancing, dsb.)_
-
----
+ 1. **Reduksi Latensi Jaringan**: Dengan menggabungkan Load Balancer dan Backend dalamn satu VM laarge, komunikasi antara NGINX dan aplikasi flask terjadi melalui interface loopback lokal (127.0.0.1). Hal ini secara drastis memangkas latensi jaringan.
+ 2. **Optimalisasi Resource untuk Peak Load**: Flash Sale menciptakan lonjakan permintaan (spike) sehingga penggunaan VM spesifikasi 4 vCPU dan 8 GB RAM memberikan headroom komputasi yang cukup besar untuk memproses antrean switching yang berlebihan pada sistem operasi.
+ 3. **Efisiensi Database**: memisahkan DB ke VM sendiri dan memastikan proses Input/Output Database tidak berebut resource dengan aplikasi web.
+ 4. **Cost-Effective High Performance**: Dengan anggaran Rp1.300.000/bulan, fokus utama dari arsitektur ini adalah memaksimalkan performa pada satu node utama yang spesifik dirancang untuk menangani throughput tinggi saat flash sale daripada memecah ke banyak VM kecil yang justru meningkatkan latensi
 
 ## 3. Implementasi Teknis
 
