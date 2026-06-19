@@ -198,7 +198,9 @@ Pengujian dilakukan menggunakan **Locust** (`Resources/Test/locustfile.py`), dij
 
 ### 5.2 Hasil Skenario 1 — Maksimum RPS
 
-> _(Belum diisi — catat rata-rata RPS tertinggi dengan tingkat kegagalan 0%, sertakan screenshot grafik RPS dari Locust.)_
+> user 750
+<img width="1430" height="323" alt="image" src="https://github.com/user-attachments/assets/db1bb921-9081-4e6e-8567-e7388d4ab763" />
+
 
 ### 5.3 Hasil Skenario 2–5 — Peak Concurrency
 
@@ -207,9 +209,13 @@ Pengujian dilakukan menggunakan **Locust** (`Resources/Test/locustfile.py`), dij
 | Skenario | Spawn Rate | Concurrent User Maksimum (failure 0%) |
 |----------|-----------|----------------------------------------|
 | 2 | 50 | |
+|<img width="1427" height="378" alt="image" src="https://github.com/user-attachments/assets/95f838d3-3dc1-4572-a53b-a0fac9cf4636" />|
 | 3 | 100 | |
+|<img width="1428" height="342" alt="image" src="https://github.com/user-attachments/assets/a33bf393-0820-4d21-a3c5-157d372fe8c6" />|
 | 4 | 200 | |
+|<img width="1428" height="341" alt="image" src="https://github.com/user-attachments/assets/58d9408d-09a2-44dd-892e-fa1d6b0827df" />|
 | 5 | 500 | |
+|<img width="1431" height="342" alt="image" src="https://github.com/user-attachments/assets/6232813f-9adb-4a88-911e-e946f4645e98" />|
 
 ### 5.4 Monitoring Resource Utilization
 
