@@ -1,0 +1,18 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./mongod.conf:/etc/mongo.conf
+      - ./dump:/dump
+    command: ["mongod", "--config", "/etc/mongo.conf"]
+    restart: always
+
+volumes:
+  mongo_data:

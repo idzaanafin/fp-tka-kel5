@@ -29,14 +29,44 @@ import jwt
 from bson import ObjectId
 from flask import Flask, jsonify, request, g
 from pymongo import MongoClient, DESCENDING, ASCENDING
+from dotenv import load_dotenv
+
+load_dotenv()
+
+#
+# REDIS
+#
+import redis
+
+USE_REDIS = os.environ.get("USE_REDIS", "false").lower() == "true"
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
+REDIS_PW   = os.environ.get("REDIS_PASSWORD")
+
+cache = None
+if USE_REDIS:
+    cache = redis.Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PW,
+        decode_responses=True
+    )
 
 # ═══════════════════════════════════════════
 # Config
 # ═══════════════════════════════════════════
+from flask_cors import CORS
 app = Flask(__name__)
 
-MONGO_URI   = os.environ.get("MONGO_URI",   "mongodb://localhost:27017/")
-JWT_SECRET  = os.environ.get("JWT_SECRET",  "ganti-ini-di-production-dengan-string-acak-panjang")
+# Tentukan spesifik IP atau domain yang diizinkan (CORS)
+ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN")
+if ALLOWED_ORIGIN:
+    CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGIN}})
+else:
+    CORS(app) # Fallback allowing all if not specified in production
+
+MONGO_URI   = os.environ.get("MONGO_URI")
+JWT_SECRET  = os.environ.get("JWT_SECRET")
 JWT_EXPIRES = int(os.environ.get("JWT_EXPIRES", 86400))
 
 client = MongoClient(MONGO_URI)
@@ -218,11 +248,37 @@ def list_products():
     sort_key, sort_dir = sort_map.get(request.args.get("sort", "newest"), ("created_at", DESCENDING))
 
     total = prods_col.count_documents(query)
+    
+    # -----------------------------
+    # OPTIMASI FLASH SALE: Caching endpoint products read-heavy
+    # -----------------------------
+    import json
+    cache_key = f"products_list_p{page}_l{limit}_{cat}_{search}_{sort_key}_{sort_dir}"
+    
+    if USE_REDIS and cache:
+        try:
+            cached = cache.get(cache_key)
+            if cached:
+                return jsonify(json.loads(cached))
+        except Exception as e:
+            print("Redis Error:", e)
+    # -----------------------------
+
     docs  = list(prods_col.find(query, {"_id": 1, "name": 1, "category": 1, "price": 1,
                                         "stock": 1, "rating": 1, "rating_count": 1, "image_url": 1})
                  .sort(sort_key, sort_dir).skip((page-1)*limit).limit(limit))
-    return jsonify({"page": page, "limit": limit, "total": total,
-                    "total_pages": -(-total // limit), "data": [serialize(d) for d in docs]})
+                 
+    response_data = {"page": page, "limit": limit, "total": total,
+                    "total_pages": -(-total // limit), "data": [serialize(d) for d in docs]}
+                    
+    # Simpan di memori Redis selama 5 detik
+    if USE_REDIS and cache:
+        try:
+            cache.setex(cache_key, 5, json.dumps(response_data))
+        except Exception:
+            pass
+            
+    return jsonify(response_data)
 
 
 @app.route("/products/<product_id>", methods=["GET"])

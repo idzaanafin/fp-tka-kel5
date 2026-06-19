@@ -1,0 +1,35 @@
+services:
+  # --- NGINX LOAD BALANCER ---
+  lb:
+    image: nginx:alpine
+    container_name: nginx_lb
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    restart: always
+
+  # --- BACKEND API ---
+  api:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    restart: always
+
+  # --- REDIS CACHE ---
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    # Menggunakan alias internal agar koneksi dari container api ke REDIS_HOST=redis aman
+    networks:
+      default:
+        aliases:
+          - redis
+    restart: always

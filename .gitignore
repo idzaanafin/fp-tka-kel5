@@ -1,0 +1,97 @@
+# ======================
+# Python
+# ======================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtualenv
+venv/
+.venv/
+env/
+
+# ======================
+# Environment
+# ======================
+
+.env
+**/.env
+
+# ======================
+# Docker
+# ======================
+
+docker-compose.override.yml
+
+# Mongo volumes
+mongo_data/
+
+# Redis volumes
+redis_data/
+
+# ======================
+# Logs
+# ======================
+
+*.log
+logs/
+
+# ======================
+# IDE
+# ======================
+
+.vscode/
+.idea/
+
+# ======================
+# OS
+# ======================
+
+.DS_Store
+Thumbs.db
+
+# ======================
+# Build
+# ======================
+
+dist/
+build/
+
+# ======================
+# Python cache
+# ======================
+
+.pytest_cache/
+.mypy_cache/
+
+# ======================
+# Coverage
+# ======================
+
+.coverage
+htmlcov/
+
+# ======================
+# Temporary
+# ======================
+
+tmp/
+temp/
+
+# ======================
+# Docker runtime
+# ======================
+
+**/.docker/
+
+# ======================
+# Database dump
+# ======================
+
+db/dump/*.bson
+db/dump/*.metadata.json
+
+# tapi tetap simpan README
+!db/README.md
