@@ -134,6 +134,7 @@ Selain backend, disediakan pula **Frontend** sederhana (`Resources/FE/index.html
 ### 2.1 Diagram Arsitektur
 
 <img width="1387" height="830" alt="Image" src="https://github.com/user-attachments/assets/95f5462d-cd93-4cac-8bca-532ce6683391" />
+
 ### 2.2 Spesifikasi dan Estimasi Biaya VM
 
 | VM | Spesifikasi | Fungsi | Harga/bulan |
