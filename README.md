@@ -204,7 +204,6 @@ Pengujian dilakukan menggunakan **Locust** (`Resources/Test/locustfile.py`), dij
 
 ### 5.3 Hasil Skenario 2–5 — Peak Concurrency
 
-> _(Belum diisi — catat jumlah concurrent user tertinggi yang masih dapat dilayani dengan failure 0% untuk masing-masing spawn rate, sertakan screenshot grafik response time & failure rate.)_
 
 | Skenario | Spawn Rate | Concurrent User Maksimum (failure 0%) |
 |----------|-----------|----------------------------------------|
