@@ -1,6 +1,8 @@
 # FINAL PROJECT TEKNOLOGI KOMPUTASI AWAN 2026
 
 ### Kelas: A
+### Kelompok: 5
+
 |Nama|NRP|
 |----|---|
 |Ahmad Idza Anafin|5027241017|
