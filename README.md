@@ -303,6 +303,7 @@ Hasil pengujian menunjukkan bahwa sistem berhasil memproses 12.341 request tanpa
 ![rps4](app/assets/rps4.jpeg)
 ![rps5](app/assets/rps5.png)
 ![rsps5(2)](app/assets/rsps5(2).png)
+![cpu](app/assets/cpu.png)
 
 
 | No | Parameter | Hasil |
@@ -318,7 +319,9 @@ Hasil pengujian menunjukkan bahwa sistem berhasil memproses 12.341 request tanpa
 ### 5.5 Monitoring Resource Utilization
 
 > _Tampilan CPU & memory usage server selama pengujian_
-![cpu](app/assets/cpu.png)
+
+<img width="1599" height="176" alt="image" src="https://github.com/user-attachments/assets/7cc0fec4-b68e-41b7-95b5-20730d0e19de" />
+
 
 ---
 
