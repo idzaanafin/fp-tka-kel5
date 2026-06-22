@@ -125,9 +125,7 @@ Selain backend, disediakan pula **Frontend** sederhana (`Resources/FE/index.html
 
 ### 1.4 Lingkungan Cloud dan Batasan
 
-> _(Belum diisi — sebutkan provider yang dipakai: GCP / Digital Ocean / Azure / Local VM, beserta alasan singkat pemilihannya.)_
-
----
+Digital Ocean dipilih sebagai lingkungan Cloud. Selain karena biaya yang lebih murah dibanding lingkungan cloud yang lain, Digital Ocean adalah lingkungan cloud yang fleksibel, mudah digunakan, dan cepat.
 
 ## 2. Rancangan Arsitektur Cloud
 
