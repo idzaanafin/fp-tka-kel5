@@ -93,7 +93,7 @@
       }
 
       try {
-        const res = await fetch(`${API_BASE}/orders`, {
+        const res = await fetch(`${API_BASE}/order`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ product, quantity, price })
@@ -112,7 +112,7 @@
         return;
       }
       try {
-        const res = await fetch(`${API_BASE}/orders/${orderId}`);
+        const res = await fetch(`${API_BASE}/order/${orderId}`);
         const data = await res.json();
         showResult("status-result", data, !res.ok);
       } catch (err) {
@@ -128,7 +128,7 @@
         return;
       }
       try {
-        const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+        const res = await fetch(`${API_BASE}/order/${orderId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status })
