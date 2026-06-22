@@ -9,7 +9,7 @@
 |Nadia Fauziazahra K.|5027241094|
 |Muhammad Ziddan Habibi|5027241122|
 |Mey Rosalina|5027241004|
-|Erlinda Annisa|5027241108|
+|Erlinda Annisa Zahra|5027241108|
 |Ahmad Wildan Fawwaz|5027241001|
 
 ---
@@ -153,17 +153,51 @@ Pemilihan arsitektur dengan skema 1 VM besar ($vCPU, 8 RAM) digunakan sebagai Lo
 
 ### 3.1 Provisioning Infrastruktur
 
-> _(Belum diisi — langkah-langkah pembuatan VM/instance, termasuk screenshot dashboard provider cloud.)_
+> _(langkah-langkah pembuatan VM/instance dashboard provider cloud.)_
+![langkahVM1](app/assets/langkahVM1.png)
+![langkahVM2](app/assets/langkahVM2.png)
 
 ### 3.2 Konfigurasi Backend (Flask + MongoDB)
 
-> _(Belum diisi — langkah instalasi Python/Flask, konfigurasi koneksi ke MongoDB, konfigurasi Gunicorn/worker, dsb.)_
+
+![mongodb](app/assets/mongodb.png)
 
 ### 3.3 Konfigurasi Load Balancer / Reverse Proxy
 
-> _(Belum diisi — jika menggunakan Nginx/load balancer, jelaskan konfigurasinya: round-robin, least connection, atau weighted.)_
+> 
+![cpu](app/assets/cpu.png)
 
 ### 3.4 Deployment Frontend
+
+Langkah 1: Login ke CloudFlare menggunakan akun email yang telah terdaftar, setelah itu pada halaman Account Home, pilih menu Workes & Pages. Lalu klik dibagian "+" yang terdapat pada bagian Workers and Pages.
+
+![add](app/assets/add.png)
+
+Langkah 2: 
+Pilih opsi "Continue with Github" kemudian hubungkan repository GitHub yang berisi source code frontend.
+
+![deploy0](app/assets/deploy0.png)
+
+Lalu pilih repository proyek yang akan dideploy. Setelah itu mengisi opsi bagian git clone repository URL. Atau juga bisa memilih dari repository lalu pilih repository yang ada file frontendnya. Lalu Klik "Next"
+
+![deploy1](app/assets/deploy1.png)
+
+Setelah itu set up your application dengan memilih opsi git account yang digunakan, lalu memilih repository yang ada file Frontend. Lalu klik "deploy".
+
+![deploy2](app/assets/deploy2.png)
+
+Langkah 3: Menunggu di build hingga selesai.
+
+![deploy3](app/assets/deploy3.png)
+
+Langkah 4: Setelah sudah selesai otomatis akan muncul domainsnya yang siap digunakan untuk melihat frontendnya.
+
+![domain](app/assets/domain.png)
+
+Langkah 5: lalu bisa paste hasil domainnya ke browser untuk mengakses aplikasi frontend.
+
+![hasilfe](app/assets/hasilfe.png)
+
 
 > _(Belum diisi — langkah deploy `index.html` dan `styles.css`, termasuk screenshot frontend yang sudah berjalan.)_
 
@@ -173,9 +207,50 @@ Pemilihan arsitektur dengan skema 1 VM besar ($vCPU, 8 RAM) digunakan sebagai Lo
 
 ### 4.1 Pengujian Endpoint (Postman)
 
+Pengujian endpoint POST /order menggunakan Postman untuk membuat pesanan baru. Request dikirim dalam format JSON yang berisi informasi produk, jumlah barang, dan harga satuan.
+![order](app/assets/order.jpeg)
+
+Pada pengujian ini, sistem berhasil mengembalikan data pesanan yang meliputi nama produk, harga, jumlah barang, total pembayaran, dan status pesanan. Status yang ditampilkan masih pending, yang menandakan pesanan telah dibuat namun belum diperbarui ke status berikutnya.
+
+Hasil ini membuktikan bahwa layanan dapat melakukan pencarian dan pengambilan data pesanan secara akurat berdasarkan ID yang diberikan.
+
+![orderid](app/assets/orderid.jpeg)
+
+Respons yang diterima berupa array JSON yang berisi informasi lengkap setiap pesanan, seperti identitas pelanggan, daftar produk, metode pembayaran, status pembayaran, biaya pengiriman, subtotal, serta status pesanan. Endpoint ini berguna untuk kebutuhan monitoring, pelaporan, dan pengelolaan data pesanan secara keseluruhan.
+
+Hasil pengujian menunjukkan bahwa sistem berhasil mengembalikan seluruh data pesanan dengan status respons 200 OK, menandakan endpoint berjalan dengan baik.
+
+![orders](app/assets/orders.jpeg)
+
+Setelah request diproses, server mengembalikan respons berupa pesan bahwa status pesanan berhasil diperbarui. Status baru yang tersimpan adalah completed, yang menunjukkan bahwa proses update data pada sistem berjalan dengan baik.
+
+![putorder](app/assets/putorder.jpeg)
+
 > _(Belum diisi — screenshot hasil request Postman untuk keempat endpoint: `POST /order`, `GET /order/<order_id>`, `GET /orders`, `PUT /order/<order_id>`.)_
 
 ### 4.2 Pengujian Antarmuka Frontend
+
+Halaman ini digunakan untuk membuat pesanan baru pada sistem. Pengguna mengisi informasi berupa nama produk, jumlah barang, dan harga satuan. Setelah tombol Buat Pesanan ditekan, frontend mengirimkan request ke API Order Service untuk menyimpan data pesanan.
+
+Pada gambar terlihat pesanan dengan produk Mouse Logitech MX Master 3S, jumlah 1 unit, dan harga Rp1.350.000 berhasil dibuat. Sistem kemudian menampilkan respons dari server berupa data pesanan yang berisi ID pesanan, informasi produk, total harga, serta status awal pesanan yaitu pending.
+
+![fe1](app/assets/fe1.jpeg)
+
+Untuk melihat ID Pesanannya yaitu: Inspect > Network > Response
+
+![id](app/assets/id.jpeg)
+
+Fitur ini digunakan untuk melihat informasi dan status terkini dari suatu pesanan berdasarkan Order ID. Pengguna memasukkan ID pesanan yang telah dibuat sebelumnya kemudian menekan tombol Cek Status.
+
+Sistem akan mengirimkan request ke backend dan menampilkan detail pesanan yang ditemukan. Pada gambar terlihat bahwa pesanan berhasil ditemukan dengan status completed, sehingga pengguna dapat mengetahui bahwa proses pesanan telah selesai diproses.
+
+![fe2](app/assets/fe2.jpeg)
+
+Halaman ini digunakan untuk mengubah status suatu pesanan. Pengguna memasukkan Order ID, memilih status baru dari daftar yang tersedia, kemudian menekan tombol Update Status.
+
+Pada contoh pengujian, status pesanan diubah menjadi completed. Setelah proses berhasil, sistem menampilkan respons dari server berupa pesan konfirmasi bahwa status pesanan telah berhasil diperbarui beserta informasi ID pesanan yang diperbarui.
+
+![fe3](app/assets/fe3.jpeg)
 
 > _(Belum diisi — screenshot antarmuka frontend saat membuat pesanan, melihat status, dan menelusuri riwayat transaksi.)_
 
@@ -198,26 +273,52 @@ Pengujian dilakukan menggunakan **Locust** (`Resources/Test/locustfile.py`), dij
 ### 5.2 Hasil Skenario 1 — Maksimum RPS
 
 > user 750
-<img width="1430" height="323" alt="image" src="https://github.com/user-attachments/assets/db1bb921-9081-4e6e-8567-e7388d4ab763" />
+Maksimum RPS yang bisa digunakan adalah 750
+![rps5(2)](app/assets/rps5(2).jpeg)
+![rps5](app/assets/rps5.jpeg)
+Hasil menunjukkan rata-rata RPS yang didapat adalah 204.84
 
+### 5.3 Hasil Skenario 2–5, Peak Concurrency
 
-### 5.3 Hasil Skenario 2–5 — Peak Concurrency
-
-
+Berkut adalah hasil skenario yang dilakukan sesuai dengan skenario pengujian
 | Skenario | Spawn Rate | Concurrent User Maksimum (failure 0%) |
 |----------|-----------|----------------------------------------|
-| 2 | 50 | |
+| 2 | 50 | 19.61 |
 |<img width="1427" height="378" alt="image" src="https://github.com/user-attachments/assets/95f838d3-3dc1-4572-a53b-a0fac9cf4636" />|
-| 3 | 100 | |
+| 3 | 100 | 37.75 |
 |<img width="1428" height="342" alt="image" src="https://github.com/user-attachments/assets/a33bf393-0820-4d21-a3c5-157d372fe8c6" />|
-| 4 | 200 | |
+| 4 | 200 | 74.56 |
 |<img width="1428" height="341" alt="image" src="https://github.com/user-attachments/assets/58d9408d-09a2-44dd-892e-fa1d6b0827df" />|
-| 5 | 500 | |
+| 5 | 500 | 	139.44 |
 |<img width="1431" height="342" alt="image" src="https://github.com/user-attachments/assets/6232813f-9adb-4a88-911e-e946f4645e98" />|
 
-### 5.4 Monitoring Resource Utilization
+### 5.4 Hasil Skenario dengan jumlah user 750
 
-> _(Belum diisi — sertakan screenshot CPU & memory usage server selama pengujian, misalnya dari `htop`/`vmstat`/monitoring provider cloud.)_
+
+Hasil pengujian menunjukkan bahwa sistem berhasil memproses 12.341 request tanpa kegagalan (0% failure rate). Rata-rata waktu respons tercatat sebesar 886,29 ms dengan throughput mencapai 204,84 request per second (RPS). Hal ini menunjukkan bahwa sistem memiliki kemampuan yang baik dalam menangani beban tinggi.
+
+![rps1](app/assets/rps1.jpeg)
+![rps2](app/assets/rps2.jpeg)
+![rps3](app/assets/rps3.jpeg)
+![rps4](app/assets/rps4.jpeg)
+![rps5](app/assets/rps5.png)
+![rsps5(2)](app/assets/rsps5(2).png)
+
+
+| No | Parameter | Hasil |
+|----|-----------|--------|
+| 1 | Total Requests | 12.341 |
+| 2 | Failures | 0 |
+| 3 | Average Response Time | 886,29 ms |
+| 4 | Median Response Time | 29 ms |
+| 5 | Maximum Response Time | 14.735 ms |
+| 6 | Requests Per Second (RPS) | 204,84 |
+| 7 | Failure Rate | 0% |
+
+### 5.5 Monitoring Resource Utilization
+
+> _Tampilan CPU & memory usage server selama pengujian_
+![cpu](app/assets/cpu.png)
 
 ---
 
@@ -225,13 +326,25 @@ Pengujian dilakukan menggunakan **Locust** (`Resources/Test/locustfile.py`), dij
 
 ### 6.1 Kesimpulan
 
-> _(Belum diisi — ringkas hasil arsitektur, performa, dan efisiensi biaya yang dicapai.)_
+Berdasarkan rancangan arsitektur dan hasil pengujian load testing yang telah dilakukan, dapat disimpulkan bahwa:
+
+1. Efisiensi Biaya (Cost-Effective): Pemilihan provider cloud Digital Ocean dengan arsitektur 2 VM—satu VM berukuran besar (4 vCPU, 8GB RAM) seharga $48/bulan untuk Load Balancer dan Backend, serta satu VM (2 vCPU, 2GB RAM) seharga $18/bulan untuk Database—telah berhasil memenuhi batasan budget maksimal $75/bulan. Total biaya arsitektur ini hanya $66/bulan (sekitar Rp 1.050.000), menyisakan ruang budget untuk kebutuhan lainnya.
+
+2. Optimalisasi Latensi dan Resource: Penggabungan NGINX (Load Balancer) dan aplikasi Flask di satu node utama terbukti efektif memangkas latensi jaringan, karena komunikasi beralih melalui interface lokal (loopback). Selain itu, pemisahan VM untuk MongoDB memastikan tidak ada perebutan resource Input/Output (I/O) dan komputasi antara web server dan sistem database.
+
+3. Stabilitas Saat Peak Load: Melalui hasil pengujian Locust, sistem ini memiliki kapasitas headroom komputasi yang tinggi dan secara handal dapat melayani request yang masif (hingga menyentuh ratusan concurrent users) dengan tingkat failure 0%, membuktikan sistem siap menghadapi kondisi ekstrim seperti flash sale.
 
 ### 6.2 Saran
 
-> _(Belum diisi — rekomendasi untuk deployment nyata di masa depan, misalnya auto-scaling, caching, indexing tambahan, dsb.)_
+Untuk pengembangan dan deployment skala produksi (nyata) di masa depan, disarankan melakukan beberapa peningkatan berikut:
 
----
+1. Implementasi Auto-Scaling dan High Availability: Saat ini arsitektur masih bertumpu pada satu VM Backend besar (Single Point of Failure). Ke depannya, disarankan memisahkan Load Balancer ke layanan Managed Load Balancer mandiri dan menerapkan Auto-Scaling Group pada node Backend, sehingga server tambahan otomatis menyala hanya saat lonjakan traffic terjadi dan mati saat kondisi normal.
+
+2. Penggunaan Caching Layer (Redis/Memcached): Mengimplementasikan sistem caching di dalam memori menggunakan Redis sangat direkomendasikan. Data dengan frekuensi akses tinggi seperti pengecekan status pesanan (GET Order Status) dapat dilayani melalui cache tanpa membebani MongoDB, sehingga response time lebih cepat.
+
+3. Database Indexing dan Replikasi: Untuk mengoptimalkan kecepatan pencarian data di MongoDB saat antrean data makin besar, perlu dipastikan indexing diterapkan pada field-field yang sering dikueri (seperti order_id dan created_at). Pertimbangkan pula implementasi Replica Set untuk mencegah downtime apabila VM Database utama mengalami kendala.
+
+4. Penerapan Monitoring & Alerting Terpusat: Agar operasional dan pengelolaan aplikasi lebih proaktif, gunakan alat monitoring dan alerting real-time seperti Prometheus dan Grafana untuk memantau utilitas CPU, RAM, serta throughput server secara terus menerus.
 
 ## Lampiran: Struktur Repository
 
