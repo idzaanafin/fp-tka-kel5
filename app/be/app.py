@@ -84,24 +84,46 @@ logs_col   = db["audit_logs"]
 def now_iso():
     return datetime.now(timezone.utc)
 
-def serialize(doc: dict) -> dict:
-    """Konversi ObjectId dan datetime ke string agar JSON-serializable."""
-    if doc is None:
+# def serialize(doc: dict) -> dict:
+#     """Konversi ObjectId dan datetime ke string agar JSON-serializable."""
+#     if doc is None:
+#         return None
+#     out = {}
+#     for k, v in doc.items():
+#         if isinstance(v, ObjectId):
+#             out[k] = str(v)
+#         elif isinstance(v, datetime):
+#             out[k] = v.isoformat()
+#         elif isinstance(v, list):
+#             out[k] = [serialize(i) if isinstance(i, dict) else
+#                       (str(i) if isinstance(i, ObjectId) else i) for i in v]
+#         elif isinstance(v, dict):
+#             out[k] = serialize(v)
+#         else:
+#             out[k] = v
+#     return out
+
+def serialize(data):
+    """Support dict + list + ObjectId + datetime"""
+    
+    if data is None:
         return None
-    out = {}
-    for k, v in doc.items():
-        if isinstance(v, ObjectId):
-            out[k] = str(v)
-        elif isinstance(v, datetime):
-            out[k] = v.isoformat()
-        elif isinstance(v, list):
-            out[k] = [serialize(i) if isinstance(i, dict) else
-                      (str(i) if isinstance(i, ObjectId) else i) for i in v]
-        elif isinstance(v, dict):
-            out[k] = serialize(v)
-        else:
-            out[k] = v
-    return out
+
+    if isinstance(data, list):
+        return [serialize(item) for item in data]
+
+    if isinstance(data, dict):
+        out = {}
+        for k, v in data.items():
+            if isinstance(v, ObjectId):
+                out[k] = str(v)
+            elif isinstance(v, datetime):
+                out[k] = v.isoformat()
+            else:
+                out[k] = serialize(v)
+        return out
+
+    return data
 
 def make_token(user_id: str, role: str) -> str:
     payload = {
@@ -156,6 +178,37 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+def optional_login(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        g.user_id = None
+        g.role = "guest"
+
+        auth = request.headers.get("Authorization", "")
+
+        if auth.startswith("Bearer "):
+            try:
+                token = auth.split(" ", 1)[1]
+
+                payload = jwt.decode(
+                    token,
+                    JWT_SECRET,
+                    algorithms=["HS256"]
+                )
+
+                g.user_id = payload["sub"]
+                g.role = payload["role"]
+
+            except (
+                jwt.ExpiredSignatureError,
+                jwt.InvalidTokenError,
+                Exception
+            ):
+                pass
+
+        return f(*args, **kwargs)
+
+    return wrapper
 # ═══════════════════════════════════════════
 # AUTH endpoints
 # ═══════════════════════════════════════════
@@ -218,7 +271,8 @@ def login():
 
 
 @app.route("/auth/me", methods=["GET"])
-@login_required
+# @login_required
+@optional_login
 def me():
     user = users_col.find_one({"_id": ObjectId(g.user_id)}, {"password": 0, "_id": 0})
     return jsonify(serialize(user))
@@ -248,13 +302,13 @@ def list_products():
     sort_key, sort_dir = sort_map.get(request.args.get("sort", "newest"), ("created_at", DESCENDING))
 
     total = prods_col.count_documents(query)
-    
+
     # -----------------------------
     # OPTIMASI FLASH SALE: Caching endpoint products read-heavy
     # -----------------------------
     import json
     cache_key = f"products_list_p{page}_l{limit}_{cat}_{search}_{sort_key}_{sort_dir}"
-    
+
     if USE_REDIS and cache:
         try:
             cached = cache.get(cache_key)
@@ -267,17 +321,17 @@ def list_products():
     docs  = list(prods_col.find(query, {"_id": 1, "name": 1, "category": 1, "price": 1,
                                         "stock": 1, "rating": 1, "rating_count": 1, "image_url": 1})
                  .sort(sort_key, sort_dir).skip((page-1)*limit).limit(limit))
-                 
+
     response_data = {"page": page, "limit": limit, "total": total,
                     "total_pages": -(-total // limit), "data": [serialize(d) for d in docs]}
-                    
+
     # Simpan di memori Redis selama 5 detik
     if USE_REDIS and cache:
         try:
             cache.setex(cache_key, 5, json.dumps(response_data))
         except Exception:
             pass
-            
+
     return jsonify(response_data)
 
 
@@ -355,138 +409,162 @@ def delete_product(product_id):
 # ORDER endpoints
 # ═══════════════════════════════════════════
 
-@app.route("/orders", methods=["POST"])
-@login_required
-def create_order():
+import uuid
+
+@app.route("/order", methods=["POST"])
+def create_simple_order():
     d = request.get_json() or {}
-    if not d.get("items") or not isinstance(d["items"], list) or len(d["items"]) == 0:
-        return err("Field 'items' wajib diisi dan tidak boleh kosong")
 
-    user = users_col.find_one({"_id": ObjectId(g.user_id)}, {"password": 0})
+    product = d.get("product")
+    quantity = d.get("quantity")
+    price = d.get("price")
 
-    # Validasi & hitung item
-    order_items = []
-    subtotal    = 0
-    for item in d["items"]:
-        if not item.get("product_id") or not item.get("qty"):
-            return err("Setiap item harus memiliki product_id dan qty")
-        try:
-            prod = prods_col.find_one({"_id": ObjectId(item["product_id"]), "is_active": True})
-        except Exception:
-            return err(f"product_id tidak valid: {item.get('product_id')}")
-        if not prod:
-            return err(f"Produk tidak ditemukan: {item.get('product_id')}", 404)
-        qty = int(item["qty"])
-        if qty < 1:
-            return err("qty minimal 1")
-        if prod["stock"] < qty:
-            return err(f"Stok tidak cukup untuk produk: {prod['name']}")
+    if not product:
+        return err("product wajib")
 
-        s = prod["price"] * qty
-        order_items.append({
-            "product_id":   prod["_id"],
-            "product_name": prod["name"],
-            "category":     prod["category"],
-            "qty":          qty,
-            "price":        prod["price"],
-            "subtotal":     s,
-        })
-        subtotal += s
+    if not quantity:
+        return err("quantity wajib")
 
-        # Kurangi stok
-        prods_col.update_one({"_id": prod["_id"]}, {"$inc": {"stock": -qty}})
+    if not price:
+        return err("price wajib")
 
-    shipping = int(d.get("shipping_cost", 0))
-    total    = subtotal + shipping
-    now      = now_iso()
+    quantity = int(quantity)
+    price = float(price)
 
-    import uuid
+    subtotal = quantity * price
+
     doc = {
-        "order_id":        str(uuid.uuid4()),
-        "user_id":         ObjectId(g.user_id),
-        "customer_name":   user["name"],
-        "customer_email":  user["email"],
-        "customer_city":   user.get("city", ""),
-        "customer_address":d.get("address", user.get("address", "")),
-        "items":           order_items,
-        "subtotal":        subtotal,
-        "discount_pct":    0,
-        "discount_amt":    0,
-        "shipping_cost":   shipping,
-        "total":           total,
-        "status":          "pending",
-        "payment_method":  d.get("payment_method", "transfer_bank"),
-        "payment_status":  "unpaid",
-        "notes":           d.get("notes", ""),
-        "created_at":      now,
-        "updated_at":      now,
+        "order_id": str(uuid.uuid4()),
+        "product": product,
+        "quantity": quantity,
+        "price": price,
+        "total": subtotal,
+        "status": "pending",
+        "created_at": now_iso(),
+        "updated_at": now_iso()
     }
+
     result = orders_col.insert_one(doc)
+
     doc["_id"] = result.inserted_id
+
     return jsonify(serialize(doc)), 201
 
+@app.route("/order/<order_id>", methods=["GET"])
+def get_simple_order(order_id):
 
-@app.route("/orders", methods=["GET"])
-@login_required
-def list_orders():
-    # User hanya lihat ordernya sendiri; admin lihat semua
-    query = {} if g.role == "admin" else {"user_id": ObjectId(g.user_id)}
+    doc = orders_col.find_one({
+        "order_id": order_id
+    })
 
-    status = request.args.get("status")
-    city   = request.args.get("city")
-    if status:
-        query["status"] = status
-    if city and g.role == "admin":
-        query["customer_city"] = city
-
-    try:
-        page  = max(1, int(request.args.get("page",  1)))
-        limit = min(100, max(1, int(request.args.get("limit", 20))))
-    except ValueError:
-        page, limit = 1, 20
-
-    total  = orders_col.count_documents(query)
-    docs   = list(orders_col.find(query, {"_id": 1, "order_id": 1, "customer_name": 1,
-                                          "total": 1, "status": 1, "payment_method": 1,
-                                          "created_at": 1, "items": 1})
-                  .sort("created_at", DESCENDING).skip((page-1)*limit).limit(limit))
-    return jsonify({"page": page, "limit": limit, "total": total,
-                    "total_pages": -(-total // limit), "data": [serialize(d) for d in docs]})
-
-
-@app.route("/orders/<order_id>", methods=["GET"])
-@login_required
-def get_order(order_id):
-    query = {"order_id": order_id}
-    if g.role != "admin":
-        query["user_id"] = ObjectId(g.user_id)
-    doc = orders_col.find_one(query)
     if not doc:
         return err("Order tidak ditemukan", 404)
-    return jsonify(serialize(doc))
 
+    return jsonify({
+        "order_id": doc["order_id"],
+        "product": doc["product"],
+        "quantity": doc["quantity"],
+        "price": doc["price"],
+        "total": doc["total"],
+        "status": doc["status"]
+    })
 
-@app.route("/orders/<order_id>/status", methods=["PUT"])
-@admin_required
-def update_order_status(order_id):
+@app.route("/order/<order_id>", methods=["PUT"])
+def update_simple_order(order_id):
+
     d = request.get_json() or {}
-    valid = ["pending", "processing", "completed", "cancelled"]
-    if d.get("status") not in valid:
-        return err(f"Status tidak valid. Pilihan: {valid}")
+
+    status = d.get("status")
+
+    valid = [
+        "pending",
+        "processing",
+        "completed",
+        "cancelled"
+    ]
+
+    if status not in valid:
+        return err("Status tidak valid")
 
     result = orders_col.update_one(
-        {"order_id": order_id},
-        {"$set": {"status": d["status"],
-                  "payment_status": "paid" if d["status"] in ("processing","completed") else "unpaid",
-                  "updated_at": now_iso()}}
+        {
+            "order_id": order_id
+        },
+        {
+            "$set": {
+                "status": status,
+                "updated_at": now_iso()
+            }
+        }
     )
+
     if result.matched_count == 0:
-        return err("Order tidak ditemukan", 404)
+        return err(
+            "Order tidak ditemukan",
+            404
+        )
 
-    write_log("update_order_status", "orders", order_id,
-              {"new_status": d["status"], "note": d.get("note","")})
-    return jsonify({"order_id": order_id, "status": d["status"]})
+    return jsonify({
+        "message": "Status berhasil diupdate",
+        "order_id": order_id,
+        "status": status
+    })
 
+# @app.route("/orders", methods=["GET"])
+# def get_simple_history():
+
+#     docs = list(
+#         orders_col
+#         .find(
+#             {},
+#             {
+#                 "_id": 0
+#             }
+#         )
+#         .sort(
+#             "created_at",
+#             DESCENDING
+#         )
+#         .limit(50)
+#     )
+
+#     return jsonify({
+#         "total": len(docs),
+#         "data": serialize(docs)
+# })
+
+@app.route("/orders", methods=["GET"])
+def get_simple_history():
+
+    try:
+        query = {}
+
+        # optional filter kalau ada user login
+        auth = request.headers.get("Authorization", "")
+
+        if auth.startswith("Bearer "):
+            try:
+                token = auth.split(" ")[1]
+                payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+                query["user_id"] = ObjectId(payload["sub"])
+            except:
+                pass
+
+        docs = list(
+            orders_col.find(query, {"_id": 0})
+            .sort("created_at", DESCENDING)
+            .limit(50)
+        )
+
+        return jsonify({
+            "total": len(docs),
+            "data": serialize(docs)
+        })
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        }), 500
 # ═══════════════════════════════════════════
 # ADMIN — User management
 # ═══════════════════════════════════════════
